@@ -1,0 +1,18 @@
+{%extends 'login.html'%}
+{%block head%}
+    <h2>SIGN UP</h2>
+{%endblock%}
+{%block formContent%}
+<form action="" method="POST" class="d-flex flex-column gap-2 col-8">  
+    {%csrf_token%}
+    <input type="text" name="first_name" id="" placeholder="First Name" class="form-control"> 
+    <input type="text" name="last_name" id="" placeholder="Last Name" class="form-control">       
+    <input type="text" name="username" placeholder="Username" id="" class="form-control">
+    <input type="password" name="password" placeholder="Password" id="" class="form-control">
+    <input type="password" name="cnf_password" placeholder="Confirm Password" id="" class="form-control">
+    <input type="submit" value="Signup" class="btn btn-primary"> 
+</form>
+{%endblock%}
+{%block p%}
+    <p>Already have an account.? <a href="{%url 'user_login'%}">Login</a></p>
+{%endblock%}

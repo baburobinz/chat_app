@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {%load static%}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        *{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body{
+            /* background-color: red; */
+            width:100%;
+            height:100%;
+            background:rgb(224, 223, 223);
+        }
+
+        .container{
+            width:100%;
+            height:100vh;
+            background:rgb(224, 223, 223);
+            
+        }
+
+        .top_section{
+
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-top:20px;
+            
+        }
+
+        ::-webkit-scrollbar{
+
+            display: none;
+        }
+
+        .send{
+          
+            display:flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .send>div{
+            background:rgb(139, 236, 139);
+        }
+
+        .received{
+            display:flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 10px;
+           
+        }
+        .received>div{
+
+            background: white;
+        }
+
+        .msg_wrapper{
+
+            padding:10px;
+            border-radius: 10px;
+            max-width: 100%;
+        }
+
+        .send>p,.received>p{
+
+            font-size: 0.7rem;
+            color:rgb(82, 82, 82);
+        }
+
+        .navbar{
+
+            width:100%;
+            background:rgb(6, 115, 162);
+            position: fixed;
+            top:0;
+            padding-left: 20px;
+            
+        }
+
+        #main_container{
+            overflow: hidden;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="navbar"><a class="btn btn-danger" href="{%url 'signout'%}">Logout</a></div>
+    <div class="container d-flex flex-column align-items-center justify-content-center" id="main_container"> 
+        <div class="top_section col-12 h-50">
+        {% if data %}
+            {% for item in data %}
+                {% if request.user == item.user %}
+                    <div class="send">
+                        <h6>{{item.user}}</h6>
+                        <div class="msg_wrapper">
+                            <div class="send_message">{{ item.message }}</div>
+                        </div>
+                        <p>{{ item.time_stamp }}</p>
+                    </div>
+                {% else %}
+                    <div class="received">
+                        <h6>{{item.user}}</h6>
+                        <div class="msg_wrapper">
+                            <div class="received_message">
+                                {{ item.message }}
+                            </div>
+                        </div>
+                        <p>{{ item.time_stamp }}</p>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        </div>
+        <form class="bottom_section col-md-8 col-10 h-25 d-flex align-items-center gap-2" id="form" method="POST">
+            {%csrf_token%}
+            <input type="text" name="send_meassage" class="form-control" placeholder="Message">
+            <input type="button" value="Send" class="btn btn-success">
+        </form>
+    </div>  
+    <script>
+        var top_section_div = document.getElementsByClassName('top_section')[0]
+        const chatSocket = new WebSocket("ws://"+window.location.host+"/")
+        chatSocket.onopen=function(e){
+            console.log("connection ok")
+        }
+        chatSocket.onclose=function(e){
+            console.log("web socket closed..!")
+        }
+        var form = document.getElementById('form');
+        form.onsubmit=function(e){
+            e.preventDefault();
+            
+            var message_input=document.querySelector('[name="send_meassage"]');
+            if (message_input.value.length>0){
+                chatSocket.send(JSON.stringify({message:message_input.value,user:'{{request.user}}'}))
+                message_input.value=""
+            }
+        }
+        
+        chatSocket.onmessage=function(e){  
+            const data = JSON.parse(e.data);
+            parsed_data = JSON.parse(data.message);
+            user_name = data.username;
+            user = "{{request.user}}"
+            message = parsed_data[0].fields.message;
+            time_stamp = parsed_data[0].fields.time_stamp;
+            utc_date = new Date(time_stamp)
+            options ={year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
+            formated_date = utc_date.toLocaleDateString('en-US',options)
+            add_dot_on_month = formated_date.substring(0,3)+"."+formated_date.substring(3,)
+            var send_received = document.createElement('div')
+            var parent = document.createElement('div');
+            var user_name_element = document.createElement('h6');
+            user_name_element.textContent=user_name
+            parent.classList.add('msg_wrapper')
+            var child_div = document.createElement('div')
+            child_div.textContent=message
+            var child_p = document.createElement('p')
+            child_p.textContent=add_dot_on_month
+            if(user_name==user){
+                send_received.classList.add('send')
+                child_div.classList.add('send_message')
+            }
+            else{   
+                send_received.classList.add('received')
+                child_div.classList.add('received_message')
+            }
+            parent.appendChild(child_div)
+            send_received.appendChild(user_name_element)
+            send_received.appendChild(parent)
+            send_received.append(child_p)
+            top_section_div.append(send_received)
+        
+            scrollcontainer()
+        }
+        function scrollcontainer(){
+            var chat_container = document.getElementsByClassName('top_section')[0];
+            chat_container.scrollTop = chat_container.scrollHeight
+        }</script>
+</body>
+</html>

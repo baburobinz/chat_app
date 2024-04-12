@@ -4,7 +4,6 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from .models import *
 
-
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.roomGroupName = 'new_group'

@@ -99,9 +99,10 @@
     </style>
 </head>
 <body>
-    <div class="navbar"><a class="btn btn-danger" href="{%url 'signout'%}">Logout</a></div>
-    <div class="container d-flex flex-column align-items-center justify-content-center" id="main_container"> 
-        <div class="top_section col-12 h-50">
+   
+    <div class="container d-flex flex-column align-items-center" id="main_container" style="justify-content: flex-end;"> 
+        <div class="navbar"><a class="btn btn-danger" href="{%url 'signout'%}">Logout</a></div>
+        <div class="top_section col-12 col-lg-8 col-md-10" style="z-index: 100;height:80%">
         {% if data %}
             {% for item in data %}
                 {% if request.user == item.user %}
@@ -126,10 +127,10 @@
             {% endfor %}
         {% endif %}
         </div>
-        <form class="bottom_section col-md-8 col-10 h-25 d-flex align-items-center gap-2" id="form" method="POST">
+        <form class="bottom_section col-md-10 col-12 col-lg-8 d-flex align-items-center gap-2" id="form" method="POST" style="height:10%;">
             {%csrf_token%}
             <input type="text" name="send_meassage" class="form-control" placeholder="Message">
-            <input type="button" value="Send" class="btn btn-success">
+            <input type="button" value="Send" class="btn btn-success" id="msg">
         </form>
     </div>  
     <script>
@@ -144,8 +145,9 @@
         var form = document.getElementById('form');
         form.onsubmit=function(e){
             e.preventDefault();
-            
+            console.log('dfghjygjdf')
             var message_input=document.querySelector('[name="send_meassage"]');
+            console.log(message_input)
             if (message_input.value.length>0){
                 chatSocket.send(JSON.stringify({message:message_input.value,user:'{{request.user}}'}))
                 message_input.value=""
@@ -191,6 +193,10 @@
         function scrollcontainer(){
             var chat_container = document.getElementsByClassName('top_section')[0];
             chat_container.scrollTop = chat_container.scrollHeight
-        }</script>
+            
+        }
+        scrollcontainer()
+        </script>
+    
 </body>
 </html>
